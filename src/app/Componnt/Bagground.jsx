@@ -6,7 +6,11 @@ export default function Background() {
   const canvasRef = useRef(null);
 
   useEffect(() => {
+    // ✅ Stop execution on server side
+    if (typeof window === "undefined") return;
+
     const canvas = canvasRef.current;
+    if (!canvas) return; // just to be extra safe
     const ctx = canvas.getContext("2d");
 
     let particles = [];

@@ -2,24 +2,57 @@
 
 import { motion, useMotionValue, useTransform } from "framer-motion";
 import { FiPhone, FiMail, FiMapPin, FiSend } from "react-icons/fi";
-import { useRef } from "react";
+import { useRef, useState, useEffect } from "react";
 
 const ContactPage = () => {
   const containerRef = useRef(null);
 
-  // Mouse position motion value
+  // Mouse position motion values
   const mouseX = useMotionValue(0);
   const mouseY = useMotionValue(0);
 
-  // Transform for left & right sections
-  const leftX = useTransform(mouseX, [0, window.innerWidth], [-20, 20]);
-  const leftY = useTransform(mouseY, [0, window.innerHeight], [-10, 10]);
+  // Track window size (to avoid SSR errors)
+  const [windowSize, setWindowSize] = useState({ width: 0, height: 0 });
 
-  const rightX = useTransform(mouseX, [0, window.innerWidth], [20, -20]);
-  const rightY = useTransform(mouseY, [0, window.innerHeight], [-10, 10]);
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const updateSize = () =>
+        setWindowSize({ width: window.innerWidth, height: window.innerHeight });
+
+      updateSize(); // set initial size
+      window.addEventListener("resize", updateSize);
+
+      return () => window.removeEventListener("resize", updateSize);
+    }
+  }, []);
+
+  // Only create transforms after window size is known
+  const leftX = useTransform(
+    mouseX,
+    [0, windowSize.width || 1],
+    [-20, 20]
+  );
+  const leftY = useTransform(
+    mouseY,
+    [0, windowSize.height || 1],
+    [-10, 10]
+  );
+
+  const rightX = useTransform(
+    mouseX,
+    [0, windowSize.width || 1],
+    [20, -20]
+  );
+  const rightY = useTransform(
+    mouseY,
+    [0, windowSize.height || 1],
+    [-10, 10]
+  );
 
   const handleMouseMove = (e) => {
-    const rect = containerRef.current.getBoundingClientRect();
+    const rect = containerRef.current?.getBoundingClientRect();
+    if (!rect) return;
+
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
 

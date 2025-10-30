@@ -3,7 +3,8 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import React, { useEffect, useState } from "react";
-import { FaShoppingBag } from "react-icons/fa";
+import { HiCodeBracket } from "react-icons/hi2";
+import { FiMenu, FiX } from "react-icons/fi";
 
 const navitems = [
   { path: "/", label: "Furniture" },
@@ -12,17 +13,18 @@ const navitems = [
   { path: "/login", label: "Login" },
 ];
 
-const NavItems = () => {
+const NavItems = ({ onClick }) => {
   const pathname = usePathname();
 
   return (
-    <ul className="flex gap-8">
+    <ul className="flex flex-col md:flex-row gap-6 md:gap-8 text-center md:text-left">
       {navitems.map((item, index) => {
         const isActive = pathname === item.path;
         return (
           <li key={index}>
             <Link
               href={item.path}
+              onClick={onClick}
               className={`relative transition-all duration-300 text-white font-medium ${
                 isActive
                   ? "text-[#00bf8f] after:w-full"
@@ -41,7 +43,9 @@ const NavItems = () => {
 const Nav = () => {
   const [show, setShow] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
+  const [menuOpen, setMenuOpen] = useState(false);
 
+  // Hide/show navbar on scroll
   useEffect(() => {
     const handleScroll = () => {
       if (window.scrollY > lastScrollY) {
@@ -55,6 +59,15 @@ const Nav = () => {
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, [lastScrollY]);
+
+  // Close menu on window resize (e.g., rotate phone)
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth >= 768) setMenuOpen(false);
+    };
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   return (
     <header
@@ -71,19 +84,41 @@ const Nav = () => {
           Shazzed
         </Link>
 
-        {/* Menu items */}
-        <div>
+        {/* Desktop Menu */}
+        <div className="hidden md:block">
           <NavItems />
         </div>
 
-        {/* Cart */}
-        <div className="cursor-pointer text-2xl relative text-white hover:text-[#00bf8f] transition-colors duration-300">
-          <FaShoppingBag className="text-2xl" />
-          <sup className="absolute -top-1 -right-1 bg-[#00bf8f] text-black w-4 h-4 rounded-full flex items-center justify-center text-xs shadow-lg">
-            0
-          </sup>
+        {/* Cart + Hamburger */}
+        <div className="flex items-center gap-6">
+          {/* Cart */}
+          <div className="relative cursor-pointer text-2xl text-white hover:text-[#00bf8f] transition-colors duration-300">
+            <HiCodeBracket />
+            
+            
+          </div>
+
+          {/* Hamburger (mobile only) */}
+          <button
+            onClick={() => setMenuOpen(!menuOpen)}
+            className="md:hidden text-3xl text-white hover:text-[#00bf8f] transition-colors duration-300 focus:outline-none"
+            aria-label="Toggle menu"
+          >
+            {menuOpen ? <FiX /> : <FiMenu />}
+          </button>
         </div>
       </nav>
+
+      {/* Mobile Menu */}
+      <div
+        className={`md:hidden fixed top-16 left-0 right-0 bg-black/90 backdrop-blur-md border-t border-[#00bf8f]/30 transition-all duration-300 ease-in-out overflow-hidden ${
+          menuOpen ? "max-h-[300px] opacity-100" : "max-h-0 opacity-0"
+        }`}
+      >
+        <div className="flex flex-col items-center py-6 px-6 space-y-6">
+          <NavItems onClick={() => setMenuOpen(false)} />
+        </div>
+      </div>
     </header>
   );
 };
